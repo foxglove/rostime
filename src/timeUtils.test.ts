@@ -140,7 +140,26 @@ describe("interpolate", () => {
 });
 
 describe("fixTime", () => {
-  // ...
+  it("works", () => {
+    expect(rostime.fixTime({ sec: 0, nsec: 0 }, false)).toEqual({ sec: 0, nsec: 0 });
+    expect(rostime.fixTime({ sec: 0, nsec: 1 }, false)).toEqual({ sec: 0, nsec: 1 });
+    expect(rostime.fixTime({ sec: 0, nsec: 1e9 - 1 }, false)).toEqual({ sec: 0, nsec: 1e9 - 1 });
+    expect(rostime.fixTime({ sec: 0, nsec: 1e9 }, false)).toEqual({ sec: 1, nsec: 0 });
+    expect(rostime.fixTime({ sec: 0, nsec: 1e9 + 1 }, false)).toEqual({ sec: 1, nsec: 1 });
+    expect(rostime.fixTime({ sec: 0, nsec: 2e9 }, false)).toEqual({ sec: 2, nsec: 0 });
+    expect(rostime.fixTime({ sec: 0, nsec: 2e9 + 1 }, false)).toEqual({ sec: 2, nsec: 1 });
+    expect(rostime.fixTime({ sec: 1, nsec: 3e9 + 5 }, false)).toEqual({ sec: 4, nsec: 5 });
+
+    expect(rostime.fixTime({ sec: 0, nsec: 0 }, true)).toEqual({ sec: 0, nsec: 0 });
+    expect(rostime.fixTime({ sec: 1, nsec: 3e9 + 5 }, true)).toEqual({ sec: 4, nsec: 5 });
+    expect(rostime.fixTime({ sec: 0, nsec: -1 }, true)).toEqual({ sec: -1, nsec: 999999999 });
+    expect(rostime.fixTime({ sec: 1, nsec: -1 }, true)).toEqual({ sec: 0, nsec: 999999999 });
+    expect(rostime.fixTime({ sec: -1, nsec: 0 }, true)).toEqual({ sec: -1, nsec: 0 });
+    expect(rostime.fixTime({ sec: -1, nsec: -1 }, true)).toEqual({ sec: -2, nsec: 999999999 });
+    expect(rostime.fixTime({ sec: -2, nsec: 0 }, true)).toEqual({ sec: -2, nsec: 0 });
+    expect(rostime.fixTime({ sec: -2, nsec: 1 }, true)).toEqual({ sec: -2, nsec: 1 });
+    expect(rostime.fixTime({ sec: -2, nsec: -1 }, true)).toEqual({ sec: -3, nsec: 999999999 });
+  });
 });
 
 describe("add", () => {

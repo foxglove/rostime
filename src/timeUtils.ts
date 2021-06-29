@@ -140,7 +140,7 @@ export function interpolate(start: Time, end: Time, fraction: number): Time {
  * @param allowNegative Allow negative times to be normalized
  * @returns A normalized Time
  */
-function fixTime(t: Time, allowNegative = false): Time {
+export function fixTime(t: Time, allowNegative = false): Time {
   const durationNanos = t.nsec;
   const secsFromNanos = Math.floor(durationNanos / 1e9);
   const newSecs = t.sec + secsFromNanos;
