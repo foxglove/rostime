@@ -35,8 +35,8 @@ export function isTime(obj?: unknown): obj is Time {
  * @param stamp Time to convert
  * @returns String timestamp containing a floating point number of seconds
  */
-export function toString(stamp: Time): string {
-  if (stamp.sec < 0 || stamp.nsec < 0) {
+export function toString(stamp: Time, allowNegative = false): string {
+  if (!allowNegative && (stamp.sec < 0 || stamp.nsec < 0)) {
     throw new Error(`Invalid negative time { sec: ${stamp.sec}, nsec: ${stamp.nsec} }`);
   }
   const sec = Math.floor(stamp.sec);
@@ -138,7 +138,7 @@ export function interpolate(start: Time, end: Time, fraction: number): Time {
  *   higher than one second (1e9)
  * @returns A normalized Time
  */
-function fixTime(t: Time): Time {
+function fixTime(t: Time, allowNegative = false): Time {
   const durationNanos = t.nsec;
   const secsFromNanos = Math.floor(durationNanos / 1e9);
   const newSecs = t.sec + secsFromNanos;
@@ -150,8 +150,8 @@ function fixTime(t: Time): Time {
       : remainingDurationNanos,
   );
   const result = { sec: newSecs, nsec: newNanos };
-  if (result.sec < 0 || result.nsec < 0) {
-    throw new Error(`Cannot normalize invalid time ${toString(result)}`);
+  if ((!allowNegative && result.sec < 0) || result.nsec < 0) {
+    throw new Error(`Cannot normalize invalid time ${toString(result, true)}`);
   }
   return result;
 }
@@ -173,7 +173,7 @@ export function add({ sec: sec1, nsec: nsec1 }: Time, { sec: sec2, nsec: nsec2 }
  * @returns A normalized representation of the second Time subtracted from the first
  */
 export function subtract({ sec: sec1, nsec: nsec1 }: Time, { sec: sec2, nsec: nsec2 }: Time): Time {
-  return fixTime({ sec: sec1 - sec2, nsec: nsec1 - nsec2 });
+  return fixTime({ sec: sec1 - sec2, nsec: nsec1 - nsec2 }, true);
 }
 
 /**
@@ -275,12 +275,12 @@ export function fromMicros(value: number): Time {
  */
 export function clampTime(time: Time, start: Time, end: Time): Time {
   if (compare(start, time) > 0) {
-    return start;
+    return { sec: start.sec, nsec: start.nsec };
   }
   if (compare(end, time) < 0) {
-    return end;
+    return { sec: end.sec, nsec: end.nsec };
   }
-  return time;
+  return { sec: time.sec, nsec: time.nsec };
 }
 
 /**
