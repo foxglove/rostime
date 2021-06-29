@@ -33,6 +33,7 @@ export function isTime(obj?: unknown): obj is Time {
 /**
  * Converts a Time to a string containing a floating point number of seconds
  * @param stamp Time to convert
+ * @param allowNegative Allow negative times to be converted
  * @returns String timestamp containing a floating point number of seconds
  */
 export function toString(stamp: Time, allowNegative = false): string {
@@ -136,6 +137,7 @@ export function interpolate(start: Time, end: Time, fraction: number): Time {
  * non-negative, and less than 1e9.
  * @param t Potentially un-normalized time with the nsec (nanoseconds) value containing a value
  *   higher than one second (1e9)
+ * @param allowNegative Allow negative times to be normalized
  * @returns A normalized Time
  */
 function fixTime(t: Time, allowNegative = false): Time {

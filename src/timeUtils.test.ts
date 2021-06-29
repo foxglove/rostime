@@ -197,11 +197,17 @@ describe("subtractTimes", () => {
 });
 
 describe("toNanoSec", () => {
-  // ...
+  expect(rostime.toNanoSec({ sec: 0, nsec: 1 })).toEqual(1n);
+  expect(rostime.toNanoSec({ sec: 1, nsec: 0 })).toEqual(BigInt(1e9));
+  expect(rostime.toNanoSec({ sec: 1, nsec: 1 })).toEqual(BigInt(1e9) + 1n);
 });
 
 describe("toMicroSec", () => {
-  // ...
+  expect(rostime.toMicroSec({ sec: 0, nsec: 1 })).toEqual(0.001);
+  expect(rostime.toMicroSec({ sec: 0, nsec: 999 })).toEqual(0.999);
+  expect(rostime.toMicroSec({ sec: 0, nsec: 1000 })).toEqual(1);
+  expect(rostime.toMicroSec({ sec: 1, nsec: 0 })).toEqual(1e6);
+  expect(rostime.toMicroSec({ sec: 1, nsec: 1 })).toEqual(1000000.001);
 });
 
 describe("toSec", () => {
