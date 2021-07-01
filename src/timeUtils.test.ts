@@ -77,6 +77,7 @@ describe("fromString", () => {
     ["1.999999999999", { sec: 1, nsec: 999_999_999 }],
   ])("converts %s to %s", (input, expected) => {
     expect(rostime.fromString(input)).toEqual(expected);
+    expect(rostime.fromString(input, { fuzzy: true })).toEqual(expected);
   });
 
   it.each([

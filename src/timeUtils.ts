@@ -54,7 +54,8 @@ const THOUSAND_YEARS_IN_NANOSEC = 1000n * 365n * 24n * 60n * 60n * BigInt(1e9);
  * @param stamp UNIX timestamp containing a whole or floating point number of seconds. If more than
  * 9 digits of nanoseconds are given, the rest will be truncated.
  * @param options.fuzzy Try to be more lenient in parsing: if the numeric value given is too large
- * and contains no decimal point, assume it is ms, µs, or ns instead of seconds.
+ * and contains no decimal point, assume it is ms, µs, ns instead of seconds (or a smaller unit, in
+ * powers of 1000).
  * @returns Time object on success, undefined on failure
  */
 export function fromString(
