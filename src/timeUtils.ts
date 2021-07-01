@@ -45,39 +45,41 @@ export function toString(stamp: Time, allowNegative = false): string {
   return `${sec}.${nsec.toFixed().padStart(9, "0")}`;
 }
 
+const DIGITS_WITHOUT_DECIMAL_POINT_RE = /^\d+$/;
+const DIGITS_WITH_DECIMAL_POINT_RE = /^(?!\.$)(\d*)\.(\d*)$/;
+const THOUSAND_YEARS_IN_NANOSEC = 1000n * 365n * 24n * 60n * 60n * BigInt(1e9);
+
 /**
- * Converts a string containing floating point number of seconds to a Time. We use a string because
- * nanosecond precision cannot be stored in a 64-bit float for large values (e.g. UNIX timestamps).
- * @param stamp UNIX timestamp containing a whole or floating point number of seconds
+ * Converts a string containing floating point number of seconds to a Time.
+ * @param stamp UNIX timestamp containing a whole or floating point number of seconds. If more than
+ * 9 digits of nanoseconds are given, the rest will be truncated.
+ * @param options.fuzzy Try to be more lenient in parsing: if the numeric value given is too large
+ * and contains no decimal point, assume it is ms, µs, or ns instead of seconds.
  * @returns Time object on success, undefined on failure
  */
-export function fromString(stamp: string): Time | undefined {
-  if (/^\d+\.?$/.test(stamp)) {
-    // Whole number with optional "." at the end.
-    const sec = parseInt(stamp, 10);
-    return { sec: isNaN(sec) ? 0 : sec, nsec: 0 };
-  }
-  if (!/^\d+\.\d+$/.test(stamp)) {
-    // Not digits.digits -- invalid.
-    return undefined;
-  }
-  const partials = stamp.split(".");
-  if (partials.length === 0) {
-    return undefined;
-  }
-
-  const [first, second] = partials;
-  if (first == undefined || second == undefined) {
-    return undefined;
+export function fromString(
+  stamp: string,
+  { fuzzy = false }: { fuzzy?: boolean } = {},
+): Time | undefined {
+  stamp = stamp.trim();
+  if (DIGITS_WITHOUT_DECIMAL_POINT_RE.test(stamp)) {
+    // Start by assuming the input is in seconds, and convert to nanoseconds.
+    let nanos = BigInt(stamp) * BigInt(1e9);
+    if (fuzzy) {
+      while (nanos > THOUSAND_YEARS_IN_NANOSEC) {
+        nanos /= 1000n;
+      }
+    }
+    return { sec: Number(nanos / BigInt(1e9)), nsec: Number(nanos % BigInt(1e9)) };
   }
 
-  // There can be 9 digits of nanoseconds. If the fractional part is "1", we need to add eight
-  // zeros. Also, make sure we round to an integer if we need to _remove_ digits.
-  const digitsShort = 9 - second.length;
-  const nsec = Math.round(parseInt(second, 10) * 10 ** digitsShort);
-  // It's possible we rounded to { sec: 1, nsec: 1e9 }, which is invalid, so fixTime.
-  const sec = parseInt(first, 10);
-  return fixTime({ sec: isNaN(sec) ? 0 : sec, nsec });
+  const match = DIGITS_WITH_DECIMAL_POINT_RE.exec(stamp);
+  if (match?.[1] != undefined && match[2] != undefined) {
+    // There can be at most 9 digits of nanoseconds. Truncate any others.
+    return { sec: Number(match[1]), nsec: Number(match[2].substr(0, 9).padEnd(9, "0")) };
+  }
+
+  return undefined;
 }
 
 /**

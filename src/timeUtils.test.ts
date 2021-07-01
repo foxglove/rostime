@@ -59,23 +59,40 @@ describe("fromString", () => {
 
   it("returns undefined if the input string is formatted incorrectly", () => {
     expect(rostime.fromString("")).toEqual(undefined);
-    expect(rostime.fromString(".12121")).toEqual(undefined);
     expect(rostime.fromString(".")).toEqual(undefined);
   });
 
-  it("returns the correct time", () => {
-    expect(rostime.fromString("12121.")).toEqual({ sec: 12121, nsec: 0 });
-    expect(rostime.fromString("1")).toEqual({ sec: 1, nsec: 0 });
-    expect(rostime.fromString("1.")).toEqual({ sec: 1, nsec: 0 });
-    expect(rostime.fromString("1.12")).toEqual({ sec: 1, nsec: 0.12e9 });
-    expect(rostime.fromString("100.100")).toEqual({ sec: 100, nsec: 0.1e9 });
-    expect(rostime.fromString("100")).toEqual({ sec: 100, nsec: 0 });
+  it.each([
+    [".12121", { sec: 0, nsec: 121_210_000 }],
+    ["12121.", { sec: 12121, nsec: 0 }],
+    ["1", { sec: 1, nsec: 0 }],
+    ["1.", { sec: 1, nsec: 0 }],
+    ["1.12", { sec: 1, nsec: 0.12e9 }],
+    ["100.100", { sec: 100, nsec: 0.1e9 }],
+    ["100", { sec: 100, nsec: 0 }],
     // Full nanosecond timestamp
-    expect(rostime.fromString("1.123456789")).toEqual({ sec: 1, nsec: 0.123456789e9 });
-    // Too much precision
-    expect(rostime.fromString("1.0123456789")).toEqual({ sec: 1, nsec: 0.012345679e9 });
-    // Too much precision, round seconds up.
-    expect(rostime.fromString("1.999999999999")).toEqual({ sec: 2, nsec: 0 });
+    ["1.123456789", { sec: 1, nsec: 0.123456789e9 }],
+    // Too much precision, truncate.
+    ["1.0123456789", { sec: 1, nsec: 0.012345678e9 }],
+    ["1.999999999999", { sec: 1, nsec: 999_999_999 }],
+  ])("converts %s to %s", (input, expected) => {
+    expect(rostime.fromString(input)).toEqual(expected);
+  });
+
+  it.each([
+    ["1", { sec: 1, nsec: 0 }, { sec: 1, nsec: 0 }],
+    ["31525401600001", { sec: 31525401600001, nsec: 0 }, { sec: 31525401600, nsec: 0.001e9 }],
+    ["31556937600001", { sec: 31556937600001, nsec: 0 }, { sec: 31556937, nsec: 0.600001e9 }],
+    ["315569376000010", { sec: 315569376000010, nsec: 0 }, { sec: 315569376, nsec: 0.00001e9 }],
+    ["31556937600001000", { sec: 31556937600001000, nsec: 0 }, { sec: 31556937, nsec: 0.600001e9 }],
+    [
+      "31556937600001000000",
+      { sec: 31556937600001000000, nsec: 0 },
+      { sec: 31556937, nsec: 0.600001e9 },
+    ],
+  ])("converts %s to %s, or %s with fuzzy parsing", (input, expected, expectedFuzzy) => {
+    expect(rostime.fromString(input)).toEqual(expected);
+    expect(rostime.fromString(input, { fuzzy: true })).toEqual(expectedFuzzy);
   });
 });
 
