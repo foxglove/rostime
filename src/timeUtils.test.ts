@@ -168,6 +168,7 @@ describe("add", () => {
     expect(rostime.add(right, left)).toEqual(expected);
   };
 
+  // eslint-disable-next-line jest/expect-expect
   it("can add two times together", () => {
     testAddition({ sec: 0, nsec: 0 }, { sec: 0, nsec: 0 }, { sec: 0, nsec: 0 });
     testAddition({ sec: 1, nsec: 100 }, { sec: 2, nsec: 200 }, { sec: 3, nsec: 300 });
@@ -192,52 +193,60 @@ describe("add", () => {
 });
 
 describe("subtractTimes", () => {
-  expect(rostime.subtract({ sec: 1, nsec: 1 }, { sec: 1, nsec: 1 })).toEqual({ sec: 0, nsec: 0 });
-  expect(rostime.subtract({ sec: 1, nsec: 2 }, { sec: 2, nsec: 1 })).toEqual({
-    sec: -1,
-    nsec: 1,
-  });
-  expect(rostime.subtract({ sec: 5, nsec: 100 }, { sec: 2, nsec: 10 })).toEqual({
-    sec: 3,
-    nsec: 90,
-  });
-  expect(rostime.subtract({ sec: 1, nsec: 1e8 }, { sec: 0, nsec: 5e8 })).toEqual({
-    sec: 0,
-    nsec: 600000000,
-  });
-  expect(rostime.subtract({ sec: 1, nsec: 0 }, { sec: 0, nsec: 1e9 - 1 })).toEqual({
-    sec: 0,
-    nsec: 1,
-  });
-  expect(rostime.subtract({ sec: 0, nsec: 0 }, { sec: 0, nsec: 1 })).toEqual({
-    sec: -1,
-    nsec: 1e9 - 1,
+  it("subtracts times", () => {
+    expect(rostime.subtract({ sec: 1, nsec: 1 }, { sec: 1, nsec: 1 })).toEqual({ sec: 0, nsec: 0 });
+    expect(rostime.subtract({ sec: 1, nsec: 2 }, { sec: 2, nsec: 1 })).toEqual({
+      sec: -1,
+      nsec: 1,
+    });
+    expect(rostime.subtract({ sec: 5, nsec: 100 }, { sec: 2, nsec: 10 })).toEqual({
+      sec: 3,
+      nsec: 90,
+    });
+    expect(rostime.subtract({ sec: 1, nsec: 1e8 }, { sec: 0, nsec: 5e8 })).toEqual({
+      sec: 0,
+      nsec: 600000000,
+    });
+    expect(rostime.subtract({ sec: 1, nsec: 0 }, { sec: 0, nsec: 1e9 - 1 })).toEqual({
+      sec: 0,
+      nsec: 1,
+    });
+    expect(rostime.subtract({ sec: 0, nsec: 0 }, { sec: 0, nsec: 1 })).toEqual({
+      sec: -1,
+      nsec: 1e9 - 1,
+    });
   });
 });
 
 describe("toNanoSec", () => {
-  expect(rostime.toNanoSec({ sec: 0, nsec: 1 })).toEqual(1n);
-  expect(rostime.toNanoSec({ sec: 1, nsec: 0 })).toEqual(BigInt(1e9));
-  expect(rostime.toNanoSec({ sec: 1, nsec: 1 })).toEqual(BigInt(1e9) + 1n);
-  expect(rostime.toNanoSec({ sec: 2, nsec: 0 })).toEqual(BigInt(2e9));
-  expect(rostime.toNanoSec({ sec: 2, nsec: 1 })).toEqual(BigInt(2e9) + 1n);
+  it("works", () => {
+    expect(rostime.toNanoSec({ sec: 0, nsec: 1 })).toEqual(1n);
+    expect(rostime.toNanoSec({ sec: 1, nsec: 0 })).toEqual(BigInt(1e9));
+    expect(rostime.toNanoSec({ sec: 1, nsec: 1 })).toEqual(BigInt(1e9) + 1n);
+    expect(rostime.toNanoSec({ sec: 2, nsec: 0 })).toEqual(BigInt(2e9));
+    expect(rostime.toNanoSec({ sec: 2, nsec: 1 })).toEqual(BigInt(2e9) + 1n);
+  });
 });
 
 describe("toMicroSec", () => {
-  expect(rostime.toMicroSec({ sec: 0, nsec: 1 })).toEqual(0.001);
-  expect(rostime.toMicroSec({ sec: 0, nsec: 999 })).toEqual(0.999);
-  expect(rostime.toMicroSec({ sec: 0, nsec: 1000 })).toEqual(1);
-  expect(rostime.toMicroSec({ sec: 1, nsec: 0 })).toEqual(1e6);
-  expect(rostime.toMicroSec({ sec: 1, nsec: 1 })).toEqual(1000000.001);
-  expect(rostime.toMicroSec({ sec: 2, nsec: 0 })).toEqual(2e6);
-  expect(rostime.toMicroSec({ sec: 2, nsec: 1 })).toEqual(2000000.001);
+  it("works", () => {
+    expect(rostime.toMicroSec({ sec: 0, nsec: 1 })).toEqual(0.001);
+    expect(rostime.toMicroSec({ sec: 0, nsec: 999 })).toEqual(0.999);
+    expect(rostime.toMicroSec({ sec: 0, nsec: 1000 })).toEqual(1);
+    expect(rostime.toMicroSec({ sec: 1, nsec: 0 })).toEqual(1e6);
+    expect(rostime.toMicroSec({ sec: 1, nsec: 1 })).toEqual(1000000.001);
+    expect(rostime.toMicroSec({ sec: 2, nsec: 0 })).toEqual(2e6);
+    expect(rostime.toMicroSec({ sec: 2, nsec: 1 })).toEqual(2000000.001);
+  });
 });
 
 describe("toSec", () => {
-  expect(rostime.toSec({ sec: 1, nsec: 0 })).toBe(1);
-  expect(rostime.toSec({ sec: 1, nsec: 1 })).toBe(1.000000001);
-  expect(rostime.toSec({ sec: 1, nsec: 999999999 })).toBe(1.999999999);
-  expect(rostime.toSec({ sec: 1, nsec: 1000000000 })).toBe(2);
+  it("works", () => {
+    expect(rostime.toSec({ sec: 1, nsec: 0 })).toBe(1);
+    expect(rostime.toSec({ sec: 1, nsec: 1 })).toBe(1.000000001);
+    expect(rostime.toSec({ sec: 1, nsec: 999999999 })).toBe(1.999999999);
+    expect(rostime.toSec({ sec: 1, nsec: 1000000000 })).toBe(2);
+  });
 });
 
 describe("fromSec", () => {
@@ -261,32 +270,36 @@ describe("fromSec", () => {
 });
 
 describe("fromNanoSec", () => {
-  expect(rostime.fromNanoSec(0n)).toEqual({ sec: 0, nsec: 0 });
-  expect(rostime.fromNanoSec(1n)).toEqual({ sec: 0, nsec: 1 });
-  expect(rostime.fromNanoSec(10n)).toEqual({ sec: 0, nsec: 10 });
-  expect(rostime.fromNanoSec(BigInt(1e9))).toEqual({ sec: 1, nsec: 0 });
-  expect(rostime.fromNanoSec(BigInt(1e9) + 1n)).toEqual({ sec: 1, nsec: 1 });
-  expect(rostime.fromNanoSec(BigInt(2e9))).toEqual({ sec: 2, nsec: 0 });
-  expect(rostime.fromNanoSec(BigInt(2e9) + 1n)).toEqual({ sec: 2, nsec: 1 });
+  it("works", () => {
+    expect(rostime.fromNanoSec(0n)).toEqual({ sec: 0, nsec: 0 });
+    expect(rostime.fromNanoSec(1n)).toEqual({ sec: 0, nsec: 1 });
+    expect(rostime.fromNanoSec(10n)).toEqual({ sec: 0, nsec: 10 });
+    expect(rostime.fromNanoSec(BigInt(1e9))).toEqual({ sec: 1, nsec: 0 });
+    expect(rostime.fromNanoSec(BigInt(1e9) + 1n)).toEqual({ sec: 1, nsec: 1 });
+    expect(rostime.fromNanoSec(BigInt(2e9))).toEqual({ sec: 2, nsec: 0 });
+    expect(rostime.fromNanoSec(BigInt(2e9) + 1n)).toEqual({ sec: 2, nsec: 1 });
+  });
 });
 
 describe("toMillis", () => {
-  expect(rostime.toMillis({ sec: 0, nsec: 0 }, false)).toEqual(0);
-  expect(rostime.toMillis({ sec: 0, nsec: 0 }, true)).toEqual(0);
-  expect(rostime.toMillis({ sec: 0, nsec: 1 }, false)).toEqual(0);
-  expect(rostime.toMillis({ sec: 0, nsec: 1 }, true)).toEqual(1);
-  expect(rostime.toMillis({ sec: 0, nsec: 1e6 - 1 }, false)).toEqual(0);
-  expect(rostime.toMillis({ sec: 0, nsec: 1e6 - 1 }, true)).toEqual(1);
-  expect(rostime.toMillis({ sec: 0, nsec: 1e6 }, false)).toEqual(1);
-  expect(rostime.toMillis({ sec: 0, nsec: 1e6 }, true)).toEqual(1);
-  expect(rostime.toMillis({ sec: 1, nsec: 0 }, false)).toEqual(1000);
-  expect(rostime.toMillis({ sec: 1, nsec: 0 }, true)).toEqual(1000);
-  expect(rostime.toMillis({ sec: 1, nsec: 1 }, false)).toEqual(1000);
-  expect(rostime.toMillis({ sec: 1, nsec: 1 }, true)).toEqual(1001);
-  expect(rostime.toMillis({ sec: 2, nsec: 0 }, false)).toEqual(2000);
-  expect(rostime.toMillis({ sec: 2, nsec: 0 }, true)).toEqual(2000);
-  expect(rostime.toMillis({ sec: 2, nsec: 1 }, false)).toEqual(2000);
-  expect(rostime.toMillis({ sec: 2, nsec: 1 }, true)).toEqual(2001);
+  it("works", () => {
+    expect(rostime.toMillis({ sec: 0, nsec: 0 }, false)).toEqual(0);
+    expect(rostime.toMillis({ sec: 0, nsec: 0 }, true)).toEqual(0);
+    expect(rostime.toMillis({ sec: 0, nsec: 1 }, false)).toEqual(0);
+    expect(rostime.toMillis({ sec: 0, nsec: 1 }, true)).toEqual(1);
+    expect(rostime.toMillis({ sec: 0, nsec: 1e6 - 1 }, false)).toEqual(0);
+    expect(rostime.toMillis({ sec: 0, nsec: 1e6 - 1 }, true)).toEqual(1);
+    expect(rostime.toMillis({ sec: 0, nsec: 1e6 }, false)).toEqual(1);
+    expect(rostime.toMillis({ sec: 0, nsec: 1e6 }, true)).toEqual(1);
+    expect(rostime.toMillis({ sec: 1, nsec: 0 }, false)).toEqual(1000);
+    expect(rostime.toMillis({ sec: 1, nsec: 0 }, true)).toEqual(1000);
+    expect(rostime.toMillis({ sec: 1, nsec: 1 }, false)).toEqual(1000);
+    expect(rostime.toMillis({ sec: 1, nsec: 1 }, true)).toEqual(1001);
+    expect(rostime.toMillis({ sec: 2, nsec: 0 }, false)).toEqual(2000);
+    expect(rostime.toMillis({ sec: 2, nsec: 0 }, true)).toEqual(2000);
+    expect(rostime.toMillis({ sec: 2, nsec: 1 }, false)).toEqual(2000);
+    expect(rostime.toMillis({ sec: 2, nsec: 1 }, true)).toEqual(2001);
+  });
 });
 
 describe("fromMillis", () => {
