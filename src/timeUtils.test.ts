@@ -18,8 +18,121 @@ describe("isTime", () => {
   });
 });
 
+describe("toRFC3339String", () => {
+  it("formats whole values correctly", () => {
+    expect(rostime.toRFC3339String({ sec: 1, nsec: 0 })).toEqual("1970-01-01T00:00:01.000000000Z");
+  });
+
+  it("formats partial nanos", () => {
+    expect(rostime.toRFC3339String({ sec: 102, nsec: 304 })).toEqual(
+      "1970-01-01T00:01:42.000000304Z",
+    );
+    expect(rostime.toRFC3339String({ sec: 102, nsec: 99900000 })).toEqual(
+      "1970-01-01T00:01:42.099900000Z",
+    );
+  });
+
+  it("formats max nanos", () => {
+    expect(rostime.toRFC3339String({ sec: 102, nsec: 999999999 })).toEqual(
+      "1970-01-01T00:01:42.999999999Z",
+    );
+  });
+
+  it("does not format negative times", () => {
+    expect(() => rostime.toRFC3339String({ sec: -1, nsec: 0 })).toThrow();
+  });
+
+  it("interoperates with Date.parse", () => {
+    const date = new Date(Date.UTC(2021, 8, 29, 18, 12, 8, 123));
+    expect(Date.parse(rostime.toRFC3339String(rostime.fromDate(date)))).toEqual(+date);
+  });
+});
+
+describe("fromRFC3339String", () => {
+  it("parses nanosecond precision", () => {
+    expect(rostime.fromRFC3339String("1970-01-01T00:00:00.0000000Z")).toEqual({
+      sec: 0,
+      nsec: 0,
+    });
+    expect(rostime.fromRFC3339String("1970-01-01T00:00:00.000000001Z")).toEqual({
+      sec: 0,
+      nsec: 1,
+    });
+    expect(rostime.fromRFC3339String("1970-01-01T00:00:00.0000000001Z")).toEqual({
+      sec: 0,
+      nsec: 0,
+    });
+    expect(rostime.fromRFC3339String("1970-01-01T00:00:00.100000000Z")).toEqual({
+      sec: 0,
+      nsec: 100_000_000,
+    });
+    expect(rostime.fromRFC3339String("1970-01-01T00:00:00.0123Z")).toEqual({
+      sec: 0,
+      nsec: 12_300_000,
+    });
+    expect(rostime.fromRFC3339String("1970-01-01T00:00:00.012345678Z")).toEqual({
+      sec: 0,
+      nsec: 12_345_678,
+    });
+  });
+
+  it("rounds to nearest nanosecond", () => {
+    expect(rostime.fromRFC3339String("1970-01-01T00:00:00.0123456789Z")).toEqual({
+      sec: 0,
+      nsec: 12_345_679,
+    });
+    expect(rostime.fromRFC3339String("1970-01-01T00:00:00.9999999991Z")).toEqual({
+      sec: 0,
+      nsec: 999_999_999,
+    });
+    expect(rostime.fromRFC3339String("1970-01-01T00:00:00.9999999995Z")).toEqual({
+      sec: 1,
+      nsec: 0,
+    });
+    expect(rostime.fromRFC3339String("1970-01-01T00:00:01.9999999995Z")).toEqual({
+      sec: 2,
+      nsec: 0,
+    });
+  });
+
+  it("handles time zone offsets", () => {
+    expect(rostime.fromRFC3339String("2021-09-29T18:12:08.123456789+00:00")).toEqual({
+      sec: 1632939128,
+      nsec: 123_456_789,
+    });
+    expect(rostime.fromRFC3339String("2021-09-29T18:12:08.123456789-00:00")).toEqual({
+      sec: 1632939128,
+      nsec: 123_456_789,
+    });
+    expect(rostime.fromRFC3339String("2021-09-29T18:12:08.123456789+00:01")).toEqual({
+      sec: 1632939128 - 60,
+      nsec: 123_456_789,
+    });
+    expect(rostime.fromRFC3339String("2021-09-29T18:12:08.123456789-00:01")).toEqual({
+      sec: 1632939128 + 60,
+      nsec: 123_456_789,
+    });
+    expect(rostime.fromRFC3339String("2021-09-29T18:12:08.123456789+10:09")).toEqual({
+      sec: 1632939128 - (10 * 60 + 9) * 60,
+      nsec: 123_456_789,
+    });
+    expect(rostime.fromRFC3339String("2021-09-29T18:12:08.123456789-10:09")).toEqual({
+      sec: 1632939128 + (10 * 60 + 9) * 60,
+      nsec: 123_456_789,
+    });
+  });
+
+  it("interoperates with Date.toISOString", () => {
+    const date = new Date(Date.UTC(2021, 8, 29, 18, 12, 8, 123));
+    expect(rostime.fromRFC3339String(date.toISOString())).toEqual({
+      sec: 1632939128,
+      nsec: 123_000_000,
+    });
+  });
+});
+
 describe("toString", () => {
-  it("formats whole values correction", () => {
+  it("formats whole values correctly", () => {
     expect(rostime.toString({ sec: 1, nsec: 0 })).toEqual("1.000000000");
   });
 
