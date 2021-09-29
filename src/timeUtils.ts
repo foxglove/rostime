@@ -46,6 +46,18 @@ export function toString(stamp: Time, allowNegative = false): string {
 }
 
 /**
+ * Parse fractional seconds (digits following a decimal separator ".") and interpret them as an
+ * integer number of nanoseconds. Because of the rounding behavior, this function may return 1e9 (a
+ * value that would be too large for the `nsec` field).
+ */
+function parseNanoseconds(digits: string) {
+  // There can be 9 digits of nanoseconds. If the fractional part is "1", we need to add eight
+  // zeros. Also, make sure we round to an integer if we need to _remove_ digits.
+  const digitsShort = 9 - digits.length;
+  return Math.round(parseInt(digits, 10) * 10 ** digitsShort);
+}
+
+/**
  * Converts a string containing floating point number of seconds to a Time. We use a string because
  * nanosecond precision cannot be stored in a 64-bit float for large values (e.g. UNIX timestamps).
  * @param stamp UNIX timestamp containing a whole or floating point number of seconds
@@ -71,13 +83,66 @@ export function fromString(stamp: string): Time | undefined {
     return undefined;
   }
 
-  // There can be 9 digits of nanoseconds. If the fractional part is "1", we need to add eight
-  // zeros. Also, make sure we round to an integer if we need to _remove_ digits.
-  const digitsShort = 9 - second.length;
-  const nsec = Math.round(parseInt(second, 10) * 10 ** digitsShort);
   // It's possible we rounded to { sec: 1, nsec: 1e9 }, which is invalid, so fixTime.
   const sec = parseInt(first, 10);
+  const nsec = parseNanoseconds(second);
   return fixTime({ sec: isNaN(sec) ? 0 : sec, nsec });
+}
+
+/**
+ * Converts a Time to a string compatible with RFC3339/ISO8601. Similar to
+ * `toDate(stamp).toISOString()`, but with nanosecond precision.
+ * @param stamp Time to convert
+ */
+export function toRFC3339String(stamp: Time): string {
+  if (stamp.sec < 0 || stamp.nsec < 0) {
+    throw new Error(`Invalid negative time { sec: ${stamp.sec}, nsec: ${stamp.nsec} }`);
+  }
+  if (stamp.nsec >= 1e9) {
+    throw new Error(`Invalid nanosecond value ${stamp.nsec}`);
+  }
+  const date = new Date(stamp.sec * 1000);
+  const year = date.getUTCFullYear();
+  const month = (date.getUTCMonth() + 1).toFixed().padStart(2, "0");
+  const day = date.getUTCDate().toFixed().padStart(2, "0");
+  const hour = date.getUTCHours().toFixed().padStart(2, "0");
+  const minute = date.getUTCMinutes().toFixed().padStart(2, "0");
+  const second = date.getUTCSeconds().toFixed().padStart(2, "0");
+  const nanosecond = stamp.nsec.toFixed().padStart(9, "0");
+  return `${year}-${month}-${day}T${hour}:${minute}:${second}.${nanosecond}Z`;
+}
+
+/**
+ * Parses a Time from a string compatible with a subset of ISO8601/RFC3339. Similar to
+ * `fromDate(new Date(string))`, but with nanosecond precision.
+ * @param stamp Time to convert
+ */
+export function fromRFC3339String(stamp: string): Time | undefined {
+  const match =
+    /^(\d{4,})-(\d\d)-(\d\d)[Tt](\d\d):(\d\d):(\d\d)(?:\.(\d+))?(?:[Zz]|([+-])(\d\d):(\d\d))$/.exec(
+      stamp,
+    );
+  if (match == null) {
+    return undefined;
+  }
+  const [, year, month, day, hour, minute, second, frac, plusMinus, offHours, offMinutes] = match;
+  const offSign = plusMinus === "-" ? -1 : 1;
+  const utcMillis = Date.UTC(
+    +year!,
+    +month! - 1,
+    +day!,
+    +hour! - offSign * +(offHours ?? 0),
+    +minute! - offSign * +(offMinutes ?? 0),
+    +second!,
+  );
+  if (utcMillis % 1000 !== 0) {
+    return undefined;
+  }
+  // It's possible we rounded to { sec: 1, nsec: 1e9 }, which is invalid, so fixTime.
+  return fixTime({
+    sec: utcMillis / 1000,
+    nsec: frac != undefined ? parseNanoseconds(frac) : 0,
+  });
 }
 
 /**
