@@ -19,7 +19,7 @@ describe("isTime", () => {
 });
 
 describe("toRFC3339String", () => {
-  it("formats whole values correction", () => {
+  it("formats whole values correctly", () => {
     expect(rostime.toRFC3339String({ sec: 1, nsec: 0 })).toEqual("1970-01-01T00:00:01.000000000Z");
   });
 
@@ -132,7 +132,7 @@ describe("fromRFC3339String", () => {
 });
 
 describe("toString", () => {
-  it("formats whole values correction", () => {
+  it("formats whole values correctly", () => {
     expect(rostime.toString({ sec: 1, nsec: 0 })).toEqual("1.000000000");
   });
 
