@@ -33,8 +33,8 @@ describe("toRFC3339String", () => {
   });
 
   it("formats max nanos", () => {
-    expect(rostime.toRFC3339String({ sec: 102, nsec: 999000000 })).toEqual(
-      "1970-01-01T00:01:42.999000000Z",
+    expect(rostime.toRFC3339String({ sec: 102, nsec: 999999999 })).toEqual(
+      "1970-01-01T00:01:42.999999999Z",
     );
   });
 
