@@ -1,6 +1,6 @@
 {
   "name": "@foxglove/rostime",
-  "version": "1.1.1",
+  "version": "1.1.2",
   "description": "ROS (Robot Operating System) Time and Duration primitives and helper methods",
   "license": "MIT",
   "keywords": [
