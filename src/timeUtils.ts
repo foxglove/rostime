@@ -249,7 +249,7 @@ export function subtract({ sec: sec1, nsec: nsec1 }: Time, { sec: sec2, nsec: ns
  * @returns A bigint integer number of nanoseconds
  */
 export function toNanoSec({ sec, nsec }: Time): bigint {
-  return BigInt(sec) * BigInt(1e9) + BigInt(nsec);
+  return BigInt(sec) * 1_000_000_000n + BigInt(nsec);
 }
 
 /**
@@ -292,7 +292,9 @@ export function fromSec(value: number): Time {
 export function fromNanoSec(nsec: bigint): Time {
   // From https://github.com/ros/roscpp_core/blob/86720717c0e1200234cc0a3545a255b60fb541ec/rostime/include/ros/impl/time.h#L63
   // and https://github.com/ros/roscpp_core/blob/7583b7d38c6e1c2e8623f6d98559c483f7a64c83/rostime/src/time.cpp#L536
-  return { sec: Math.trunc(Number(nsec / BigInt(1e9))), nsec: Number(nsec % BigInt(1e9)) };
+  //
+  // Note: BigInt(1e9) is slower than writing out the number
+  return { sec: Number(nsec / 1_000_000_000n), nsec: Number(nsec % 1_000_000_000n) };
 }
 
 /**
