@@ -20,7 +20,7 @@ console.log(`${rostime.toString(a)} == ${rostime.toString(b)} (${rostime.areEqua
 
 ## License
 
-@foxglove/rostime is licensed under [MIT License](https://opensource.org/licenses/MIT).
+@foxglove/rostime is licensed under the [MIT License](https://opensource.org/licenses/MIT).
 
 ## Releasing
 
