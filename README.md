@@ -1,5 +1,8 @@
 # @foxglove/rostime
 
+> [!IMPORTANT]
+> This package has moved to https://github.com/foxglove/ros-typescript.
+
 > _ROS (Robot Operating System) Time and Duration primitives and helper methods_
 
 [![npm version](https://img.shields.io/npm/v/@foxglove/rostime.svg?style=flat)](https://www.npmjs.com/package/@foxglove/rostime)
